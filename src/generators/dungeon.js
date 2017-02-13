@@ -3,34 +3,38 @@ import Corridor from '../pieces/corridor';
 import Room from '../pieces/room';
 import {FACING} from '../const';
 import {shift_left, shift_right, shift} from '../utils';
+import { sampleSize, join } from 'lodash';
 
 export default class Dungeon extends Generator {
 
     constructor(options) {
         options = Object.assign({}, {
-            size: [100, 100],
-            rooms: {
-                initial: {
-                    min_size: [3, 3],
-                    max_size: [3, 3],
-                    max_exits: 1
+            "size": [150, 150],
+            "rooms": {
+                "initial": {
+                    "min_size": [3, 3],
+                    "max_size": [3, 3],
+                    "max_exits": 3
                 },
-                any: {
-                    min_size: [2, 2],
-                    max_size: [5, 5],
-                    max_exits: 4
+                "any": {
+                    "min_size": [3, 3],
+                    "max_size": [3, 3],
+                    "max_exits": 3
                 }
             },
-            max_corridor_length: 6,
-            min_corridor_length: 2,
-            corridor_density: 0.5, //corridors per room
-            symmetric_rooms: false, // exits must be in the middle of walls
-            interconnects: 1, //extra corridors to connect rooms and make circular paths. not guaranteed
-            max_interconnect_length: 10,
-            room_count: 10
+            "max_corridor_length": 2,
+            "min_corridor_length": 2,
+            "corridor_density": 0.25,
+            "symmetric_rooms": true,
+            "interconnects": 1,
+            "max_interconnect_length": 10,
+            "room_count": 50
         }, options);
 
         super(options);
+
+        const sample = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890';
+        this.hash = sampleSize(sample, this.options.room_count);
 
         this.room_tags = Object.keys(this.rooms).filter(tag => (tag !== 'any' && tag !== 'initial'));
 
@@ -174,7 +178,8 @@ export default class Dungeon extends Generator {
             size: this.random.vec(opts.min_size, opts.max_size),
             max_exits: opts.max_exits,
             symmetric: this.symmetric_rooms,
-            tag: key
+            tag: key,
+            tikalTag: this.hash.pop()
         });
 
         this.room_tags.splice(this.room_tags.indexOf(key), 1);
@@ -191,7 +196,7 @@ export default class Dungeon extends Generator {
             no_corridors = Math.round(this.corridor_density * no_rooms);
 
         this.add_piece(room, this.options.rooms.initial && this.options.rooms.initial.position ? this.options.rooms.initial.position :  this.get_center_pos());
-
+        this.rooms.push(room);
         let k;
 
         while (no_corridors || no_rooms) {
@@ -203,12 +208,16 @@ export default class Dungeon extends Generator {
 
                 //try to connect to this corridor next
                 if (no_rooms > 0 && added) {
-                    this.add_room(this.new_room(), null, corridor);
+                    let r = this.new_room();
+                    this.add_room(r, null, corridor);
+                    this.rooms.push(r);
                     no_rooms --;
                 }
 
             } else {
-                this.add_room(this.new_room());
+                let r = this.new_room();
+                this.add_room(r);
+                this.rooms.push(r);
                 no_rooms --;
             }
         }
