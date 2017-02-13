@@ -1,4 +1,4 @@
-const Dungeon  = require('./lib/generators/dungeon').default;
+const Dungeon = require('./lib/dungeon-generator').Dungeon;
 
 let dungeon = new Dungeon();
 

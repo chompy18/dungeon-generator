@@ -1,0 +1,1 @@
+module.exports.Dungeon = require('./generators/dungeon').default;
