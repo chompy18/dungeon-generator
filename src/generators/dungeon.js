@@ -9,7 +9,7 @@ export default class Dungeon extends Generator {
 
     constructor(options) {
         options = Object.assign({}, {
-            "size": [150, 150],
+            "size": [100, 100],
             "rooms": {
                 "initial": {
                     "min_size": [3, 3],
@@ -24,7 +24,7 @@ export default class Dungeon extends Generator {
             },
             "max_corridor_length": 2,
             "min_corridor_length": 2,
-            "corridor_density": 0.25,
+            "corridor_density": 0,
             "symmetric_rooms": true,
             "interconnects": 1,
             "max_interconnect_length": 10,
@@ -213,7 +213,7 @@ export default class Dungeon extends Generator {
     persist() {
         let pDungeon = {};
 
-        this.rooms.map((room) => {
+        this.children.map((room) => {
             pDungeon[room.id] = this.persistRoom(room);
         });
 
@@ -238,16 +238,12 @@ export default class Dungeon extends Generator {
 
                 //try to connect to this corridor next
                 if (no_rooms > 0 && added) {
-                    let r = this.new_room();
-                    this.add_room(r, null, corridor);
-                    this.rooms.push(r);
+                    this.add_room(this.new_room(), null, corridor);
                     no_rooms --;
                 }
 
             } else {
-                let r = this.new_room();
-                this.add_room(r);
-                this.rooms.push(r);
+                this.add_room(this.new_room());
                 no_rooms --;
             }
         }
