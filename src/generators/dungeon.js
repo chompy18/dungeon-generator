@@ -190,6 +190,36 @@ export default class Dungeon extends Generator {
         return room;
     }
 
+    persistRoom(room) {
+        let proom = {
+            id: room.id,
+            size: room.size,
+            position: room.position,
+            tikalTag: room.options.tikalTag,
+            exits: []
+
+        };
+
+        for (let exit of room.exits) {
+            proom.exits.push({
+                direction: exit[1],
+                targetRoomId: exit[2].id
+            })
+        }
+
+        return proom;
+    }
+
+    persist() {
+        let pDungeon = {};
+
+        this.rooms.map((room) => {
+            pDungeon[room.id] = this.persistRoom(room);
+        });
+
+        return pDungeon;
+    }
+
     generate() {
         let no_rooms = this.options.room_count - 1,
             room = this.new_room(this.options.rooms.initial ? 'initial' : undefined),
